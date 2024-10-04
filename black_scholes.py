@@ -1,5 +1,6 @@
 import math
-import numpy as np 
+from scipy.stats import norm, lognorm
+import numpy as np
 import yfinance as yf 
 import matplotlib.pyplot as plt
 
@@ -39,7 +40,7 @@ def plot_paths(num_paths, S, T, n_step = 100):
     time = np.linspace(0, T, n_step + 1)
     for _ in range(num_paths):
         ax.plot(time, stock_price_path(S, T, n_step))
-
+    
     ax.plot(time, S.s0 * np.exp(S.mu * time))
     plt.show()
 
@@ -52,10 +53,16 @@ def stock_price_distribution(S, T, n_step, n_sim):
         direct_distr[i] = final_price(S, T)
     
     fig, axes = plt.subplots(1, 2)
-    axes[0].hist(path_distr)
-    axes[1].hist(direct_distr)
+    axes[0].hist(path_distr, density = True) 
+    axes[1].hist(direct_distr, density = True) 
 
-    # TODO: add graph of lognormal distribution over the two histograms
+    prices = np.linspace(0.1, max(max(path_distr), max(direct_distr)), 200)
+    axes[0].plot(
+        prices, lognorm.pdf(prices, S.sigma * math.sqrt(T), scale = np.exp(np.log(S.s0) + (S.mu - 0.5 * S.sigma ** 2) * T) )
+    )
+    axes[1].plot(
+        prices, norm.pdf(np.log(prices), np.log(S.s0) + (S.mu - 0.5 * S.sigma ** 2) * T, S.sigma * math.sqrt(T)) / prices
+    )
     plt.show()
 
 
