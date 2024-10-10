@@ -1,8 +1,8 @@
 """Describe representation for types of assets."""
-
 import math
 import numpy as np
 from scipy.stats import lognorm
+import yfinance as yf
 
 
 class Stock:
@@ -13,6 +13,24 @@ class Stock:
         self.s0 = s0
         self.mu = mu
         self.sigma = sigma
+        self.ticker=None
+
+    def __init__(self, ticker, time_period):
+        """Compute historical drift and vol terms."""
+        self.ticker = ticker
+        self.historical_data(time_period)
+
+    def historical_data(self, time_period):
+        # get closing prices
+        self.data = yf.Ticker(self.ticker).history(time_period)['Close']
+        # TODO: optional sampling parameter
+
+        logreturns = np.log(self.data.div(self.data.shift(1)))
+
+        # may need to adjust because not all delta t is 1 day
+        self.sigma = math.sqrt(logreturns.var() * 365)
+        self.mu = 365 * logreturns.mean()  + 0.5 * self.sigma ** 2
+
 
     def price_path(self, time):
         """Simulate gbm by following black-scholes stock price dynamics.
