@@ -23,6 +23,7 @@ class Stock:
     def historical_data(self, time_period):
         # get closing prices
         self.data = yf.Ticker(self.ticker).history(time_period)['Close']
+        self.s0 = self.data[-1]
         # TODO: optional sampling parameter
 
         logreturns = np.log(self.data.div(self.data.shift(1)))
