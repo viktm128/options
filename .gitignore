@@ -1,2 +1,5 @@
 env/
 __pycache__/
+*.zip
+final_project/data/options_chain_raw/
+final_project/.ipynb_checkpoints/
